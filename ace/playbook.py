@@ -150,7 +150,8 @@ class Playbook:
                 section: list(ids) if isinstance(ids, Iterable) else []
                 for section, ids in sections_payload.items()
             }
-        instance._next_id = int(payload.get("next_id", 0))
+        next_id_value = payload.get("next_id", 0)
+        instance._next_id = int(next_id_value) if next_id_value is not None else 0
         return instance
 
     def dumps(self) -> str:

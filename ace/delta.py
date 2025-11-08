@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Literal, Optional
+from typing import Any, Dict, Iterable, List, Literal, Optional, cast
 
 
 OperationType = Literal["ADD", "UPDATE", "TAG", "REMOVE"]
@@ -22,18 +22,23 @@ class DeltaOperation:
     @classmethod
     def from_json(cls, payload: Dict[str, object]) -> "DeltaOperation":
         # Filter metadata for TAG operations to only include valid tags
-        metadata = payload.get("metadata") or {}
+        metadata_raw = payload.get("metadata") or {}
+        metadata: Dict[str, Any] = cast(Dict[str, Any], metadata_raw) if isinstance(metadata_raw, dict) else {}
+
         if str(payload["type"]).upper() == "TAG":
             # Only include valid tag names for TAG operations
             valid_tags = {"helpful", "harmful", "neutral"}
             metadata = {k: v for k, v in metadata.items() if str(k) in valid_tags}
 
+        op_type = str(payload["type"]).upper()
+        if op_type not in ("ADD", "UPDATE", "TAG", "REMOVE"):
+            raise ValueError(f"Invalid operation type: {op_type}")
+
         return cls(
-            type=str(payload["type"]),
+            type=cast(OperationType, op_type),
             section=str(payload.get("section", "")),
-            content=payload.get("content") and str(payload["content"]),
-            bullet_id=payload.get("bullet_id")
-            and str(payload.get("bullet_id")),  # type: ignore[arg-type]
+            content=str(payload["content"]) if payload.get("content") is not None else None,
+            bullet_id=str(payload["bullet_id"]) if payload.get("bullet_id") is not None else None,
             metadata={str(k): int(v) for k, v in metadata.items()},
         )
 

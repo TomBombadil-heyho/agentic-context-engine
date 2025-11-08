@@ -6,7 +6,10 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence
+
+if TYPE_CHECKING:
+    from .observability.opik_integration import OpikIntegration
 
 from .playbook import Playbook
 from .roles import (
@@ -166,6 +169,7 @@ class AdapterBase:
 
         # Observability integration
         self.enable_observability = enable_observability
+        self.opik_integration: Optional[OpikIntegration] = None
         if enable_observability:
             try:
                 from .observability import get_integration
@@ -174,8 +178,6 @@ class AdapterBase:
             except ImportError:
                 self.opik_integration = None
                 self.enable_observability = False
-        else:
-            self.opik_integration = None
 
     # ------------------------------------------------------------------ #
     # Observability tracking methods

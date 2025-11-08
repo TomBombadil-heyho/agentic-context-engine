@@ -17,12 +17,16 @@ try:
     from .observability.tracers import maybe_track
 except ImportError:
     # Mock decorator if observability not available
-    def maybe_track(*args, **kwargs):
-        def decorator(func):
-            return func
+    from typing import TypeVar, Callable
+    F = TypeVar('F', bound=Callable[..., Any])
 
-        if len(args) == 1 and callable(args[0]):
-            return args[0]
+    def maybe_track(
+        name: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        **kwargs: Any
+    ) -> Callable[[F], F]:
+        def decorator(func: F) -> F:
+            return func
         return decorator
 
 
@@ -364,14 +368,14 @@ class ReplayGenerator:
             )
 
         # Create metadata for observability
-        reasoning_map = {
+        reasoning_map: Dict[str, str] = {
             "sample_metadata": "[Replayed from sample.metadata]",
             "sample_dict_metadata": "[Replayed from sample dict metadata]",
             "sample_dict_direct": "[Replayed from sample dict]",
             "responses_dict": "[Replayed from responses dict]",
             "default_response": "[Replayed using default response]",
         }
-        reasoning = reasoning_map.get(response_source, "[Replayed - source unknown]")
+        reasoning = reasoning_map.get(response_source if response_source else "", "[Replayed - source unknown]")
 
         # Return GeneratorOutput matching the interface
         return GeneratorOutput(

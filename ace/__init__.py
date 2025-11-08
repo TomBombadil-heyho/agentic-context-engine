@@ -1,5 +1,6 @@
 """Agentic Context Engineering (ACE) reproduction framework."""
 
+from typing import Optional
 from .playbook import Bullet, Playbook
 from .delta import DeltaOperation, DeltaBatch
 from .llm import LLMClient, DummyLLMClient, TransformersLLMClient
@@ -28,27 +29,27 @@ from .features import has_opik, has_litellm
 # Import observability components if available
 if has_opik():
     try:
-        from .observability import OpikIntegration
-
+        from .observability import OpikIntegration as _OpikIntegration
+        OpikIntegration: Optional[type] = _OpikIntegration
         OBSERVABILITY_AVAILABLE = True
     except ImportError:
-        OpikIntegration = None
+        OpikIntegration: Optional[type] = None  # type: ignore
         OBSERVABILITY_AVAILABLE = False
 else:
-    OpikIntegration = None
+    OpikIntegration: Optional[type] = None  # type: ignore
     OBSERVABILITY_AVAILABLE = False
 
 # Import production LLM clients if available
 if has_litellm():
     try:
-        from .llm_providers import LiteLLMClient
-
+        from .llm_providers import LiteLLMClient as _LiteLLMClient
+        LiteLLMClient: Optional[type] = _LiteLLMClient
         LITELLM_AVAILABLE = True
     except ImportError:
-        LiteLLMClient = None
+        LiteLLMClient: Optional[type] = None  # type: ignore
         LITELLM_AVAILABLE = False
 else:
-    LiteLLMClient = None
+    LiteLLMClient: Optional[type] = None  # type: ignore
     LITELLM_AVAILABLE = False
 
 __all__ = [

@@ -5,14 +5,15 @@ import logging
 
 try:
     from langchain_litellm import ChatLiteLLM, ChatLiteLLMRouter
-    from litellm import Router
+    from litellm import Router as LiteLLMRouter
 
     LANGCHAIN_AVAILABLE = True
+    Router: Optional[type] = LiteLLMRouter
 except ImportError:
     LANGCHAIN_AVAILABLE = False
-    ChatLiteLLM = None
-    ChatLiteLLMRouter = None
-    Router = None
+    ChatLiteLLM = None  # type: ignore
+    ChatLiteLLMRouter = None  # type: ignore
+    Router: Optional[type] = None
 
 from ..llm import LLMClient, LLMResponse
 

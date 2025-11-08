@@ -817,10 +817,13 @@ class PromptManager:
         self._track_usage(f"generator-{prompt_key}")
 
         # Add current date if v2 prompt
-        if "current_date" in prompt:
+        if prompt is not None and "{current_date}" in prompt:
             prompt = prompt.replace(
                 "{current_date}", datetime.now().strftime("%Y-%m-%d")
             )
+
+        if prompt is None:
+            raise ValueError(f"No generator prompt found for version {version}, domain {domain}")
 
         return prompt
 
@@ -842,6 +845,10 @@ class PromptManager:
                 prompt = getattr(prompts, prompt.split(".")[-1])
 
         self._track_usage(f"reflector-{version}")
+
+        if prompt is None:
+            raise ValueError(f"No reflector prompt found for version {version}")
+
         return prompt
 
     def get_curator_prompt(self, version: Optional[str] = None) -> str:
@@ -862,6 +869,10 @@ class PromptManager:
                 prompt = getattr(prompts, prompt.split(".")[-1])
 
         self._track_usage(f"curator-{version}")
+
+        if prompt is None:
+            raise ValueError(f"No curator prompt found for version {version}")
+
         return prompt
 
     def _track_usage(self, prompt_id: str) -> None:

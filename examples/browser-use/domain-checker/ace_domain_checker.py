@@ -311,8 +311,8 @@ ERROR: <reason>
                 history = await asyncio.wait_for(agent.run(), timeout=180.0)
                 print(f"   📋 Agent completed, processing results...")
 
-                # Debug: Print detailed history information
-                print_history_details(history)
+                # Debug: Print detailed history information (uncomment for debugging)
+                # print_history_details(history)
 
                 # Parse result
                 output = history.final_result() if hasattr(history, "final_result") else ""
@@ -552,7 +552,7 @@ def main():
 
     # Create environment
     environment = DomainCheckEnvironment(
-        headless=False,  # Using headless mode false for better performance
+        headless=True,  # Set False to see browser (slower but easier to debug)
         model="claude-sonnet-4-5-20250929",
         run_start_time=run_start_time  # Pass start time for trace filtering
     )

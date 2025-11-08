@@ -20,17 +20,18 @@ try:
 
     # Try to import LiteLLM Opik integration
     try:
-        from litellm.integrations.opik.opik import OpikLogger
+        from litellm.integrations.opik.opik import OpikLogger as OpikLoggerClass
 
         LITELLM_OPIK_AVAILABLE = True
+        OpikLogger: Optional[type] = OpikLoggerClass
     except ImportError:
         LITELLM_OPIK_AVAILABLE = False
-        OpikLogger = None
+        OpikLogger: Optional[type] = None
 
 except ImportError:
     OPIK_AVAILABLE = False
     LITELLM_OPIK_AVAILABLE = False
-    OpikLogger = None
+    OpikLogger: Optional[type] = None
 
     # Create mock decorators for graceful degradation
     def track(*args, **kwargs):

@@ -75,8 +75,8 @@ async def check_domain(domain: str, model: str = "claude-sonnet-4-5-20250929", h
             # Run with timeout
             history = await asyncio.wait_for(agent.run(), timeout=180.0)
 
-            # Debug: Print detailed history information
-            print_history_details(history)
+            # Debug: Print detailed history information (uncomment for debugging)
+            # print_history_details(history)
 
             # Parse result (back to original working logic)
             output = history.final_result() if hasattr(history, "final_result") else ""

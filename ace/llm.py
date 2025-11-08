@@ -6,7 +6,10 @@ from abc import ABC, abstractmethod
 import json
 from collections import deque
 from dataclasses import dataclass
-from typing import Any, Deque, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Deque, Dict, Optional, Union
+
+if TYPE_CHECKING:
+    import torch
 
 
 @dataclass

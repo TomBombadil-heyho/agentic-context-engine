@@ -226,13 +226,14 @@ class LiteLLMClient(LLMClient):
                 }
             )
 
+        fallback_list = (
+            [{self.config.model: self.config.fallbacks}]
+            if self.config.fallbacks
+            else []
+        )
         self.router = Router(
             model_list=model_list,
-            fallbacks=(
-                [{self.config.model: self.config.fallbacks}]
-                if self.config.fallbacks
-                else None
-            ),
+            fallbacks=fallback_list,
             num_retries=self.config.max_retries,
             timeout=self.config.timeout,
         )

@@ -1149,7 +1149,7 @@ class PromptManager:
         """
         self.default_version = default_version
         self.usage_stats: Dict[str, int] = {}
-        self.quality_scores: Dict[str, float] = {}
+        self.quality_scores: Dict[str, List[float]] = {}
 
     def get_generator_prompt(
         self, domain: Optional[str] = None, version: Optional[str] = None
@@ -1190,10 +1190,13 @@ class PromptManager:
         self._track_usage(f"generator-{prompt_key}")
 
         # Add current date for v2+ prompts
-        if version.startswith("2") and "{current_date}" in prompt:
+        if prompt is not None and version.startswith("2") and "{current_date}" in prompt:
             prompt = prompt.replace(
                 "{current_date}", datetime.now().strftime("%Y-%m-%d")
             )
+
+        if prompt is None:
+            raise ValueError(f"No generator prompt found for version {version}")
 
         return prompt
 
@@ -1214,6 +1217,10 @@ class PromptManager:
                 prompt = getattr(prompts, module_parts[-1])
 
         self._track_usage(f"reflector-{version}")
+
+        if prompt is None:
+            raise ValueError(f"No reflector prompt found for version {version}")
+
         return prompt
 
     def get_curator_prompt(self, version: Optional[str] = None) -> str:
@@ -1233,6 +1240,10 @@ class PromptManager:
                 prompt = getattr(prompts, module_parts[-1])
 
         self._track_usage(f"curator-{version}")
+
+        if prompt is None:
+            raise ValueError(f"No curator prompt found for version {version}")
+
         return prompt
 
     def _track_usage(self, prompt_id: str) -> None:
@@ -1547,12 +1558,12 @@ def compare_prompt_versions(role: str = "generator") -> Dict[str, Any]:
     # Calculate metrics
     comparisons["length_v20"] = len(v20_prompt)
     comparisons["length_v21"] = len(v21_prompt)
-    comparisons["length_increase"] = (len(v21_prompt) - len(v20_prompt)) / len(
+    comparisons["length_increase"] = float((len(v21_prompt) - len(v20_prompt)) / len(
         v20_prompt
-    )
+    ))
 
     # Count key improvements
-    v21_features = {
+    v21_features: Dict[str, Any] = {
         "quick_reference": "⚡ QUICK REFERENCE ⚡" in v21_prompt,
         "mandatory_markers": v21_prompt.count("MANDATORY"),
         "critical_markers": v21_prompt.count("CRITICAL"),
