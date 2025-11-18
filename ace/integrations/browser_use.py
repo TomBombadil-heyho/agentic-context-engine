@@ -411,6 +411,62 @@ class ACEAgent:
         if error:
             feedback_parts.append(f"\nFailure reason: {error}")
 
+        # Build detailed execution logs (for Reflector analysis)
+        execution_log_parts = []
+
+        # Add detailed thoughts
+        if "thoughts" in trace_data and trace_data["thoughts"]:
+            execution_log_parts.append("\n=== Agent Reasoning (Detailed) ===")
+            for i, thought in enumerate(trace_data["thoughts"], 1):
+                execution_log_parts.append(f"\nThought {i}:")
+                if thought.get("thinking"):
+                    execution_log_parts.append(f"  Thinking: {thought['thinking']}")
+                if thought.get("evaluation"):
+                    execution_log_parts.append(f"  Evaluation: {thought['evaluation']}")
+                if thought.get("next_goal"):
+                    execution_log_parts.append(f"  Next Goal: {thought['next_goal']}")
+                if thought.get("memory"):
+                    execution_log_parts.append(f"  Memory: {thought['memory']}")
+
+        # Add detailed actions
+        if "actions" in trace_data and trace_data["actions"]:
+            execution_log_parts.append("\n=== Actions Taken ===")
+            for i, action in enumerate(trace_data["actions"], 1):
+                execution_log_parts.append(f"Action {i}: {action}")
+
+        # Add detailed action results
+        if "action_results" in trace_data and trace_data["action_results"]:
+            execution_log_parts.append("\n=== Action Results ===")
+            for i, result in enumerate(trace_data["action_results"], 1):
+                result_parts = []
+                if "is_done" in result:
+                    result_parts.append(f"is_done={result['is_done']}")
+                if "success" in result:
+                    result_parts.append(f"success={result['success']}")
+                if result.get("error"):
+                    result_parts.append(f"error={result['error']}")
+                if result.get("extracted_content"):
+                    result_parts.append(f"content={result['extracted_content']}")
+                execution_log_parts.append(f"Result {i}: {', '.join(result_parts)}")
+
+        # Add URLs (full list)
+        if "urls" in trace_data and trace_data["urls"]:
+            execution_log_parts.append("\n=== URLs Visited ===")
+            for i, url in enumerate(trace_data["urls"], 1):
+                execution_log_parts.append(f"{i}. {url}")
+
+        # Add errors (full list)
+        if "step_errors" in trace_data and trace_data["step_errors"]:
+            execution_log_parts.append("\n=== Errors Encountered ===")
+            for i, err in enumerate(trace_data["step_errors"], 1):
+                execution_log_parts.append(f"{i}. {err}")
+
+        # Append detailed logs to feedback if available
+        if execution_log_parts:
+            feedback_parts.append("\n\n=== BROWSER EXECUTION DETAILS ===")
+            feedback_parts.extend(execution_log_parts)
+            feedback_parts.append("\n=== END EXECUTION DETAILS ===")
+
         return {
             "feedback": "\n".join(feedback_parts),
             "raw_trace": trace_data,
