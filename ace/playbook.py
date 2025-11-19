@@ -40,6 +40,25 @@ class Bullet:
         setattr(self, tag, current + increment)
         self.updated_at = datetime.now(timezone.utc).isoformat()
 
+    def to_llm_dict(self) -> Dict[str, Any]:
+        """
+        Return dictionary with only LLM-relevant fields.
+
+        Excludes created_at and updated_at which are internal metadata
+        not useful for LLM strategy selection.
+
+        Returns:
+            Dict with id, section, content, helpful, harmful, neutral
+        """
+        return {
+            "id": self.id,
+            "section": self.section,
+            "content": self.content,
+            "helpful": self.helpful,
+            "harmful": self.harmful,
+            "neutral": self.neutral,
+        }
+
 
 class Playbook:
     """Structured context store as defined by ACE."""
@@ -279,17 +298,7 @@ class Playbook:
             )
 
         # Only include LLM-relevant fields (exclude created_at, updated_at)
-        bullets_data = [
-            {
-                "id": b.id,
-                "section": b.section,
-                "content": b.content,
-                "helpful": b.helpful,
-                "harmful": b.harmful,
-                "neutral": b.neutral,
-            }
-            for b in self.bullets()
-        ]
+        bullets_data = [b.to_llm_dict() for b in self.bullets()]
 
         # Use tab delimiter for 5-10% better compression than comma
         return encode({"bullets": bullets_data}, {"delimiter": "\t"})

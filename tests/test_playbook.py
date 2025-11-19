@@ -58,6 +58,38 @@ class TestPlaybook(unittest.TestCase):
 
         self.assertEqual(bullet.helpful, 7)  # 5 + 2
 
+    def test_bullet_to_llm_dict_excludes_timestamps(self):
+        """Test that to_llm_dict filters out created_at and updated_at."""
+        from ace.playbook import Bullet
+
+        bullet = Bullet(
+            id="test-001",
+            section="test_section",
+            content="Test strategy content",
+            helpful=5,
+            harmful=1,
+            neutral=2,
+            created_at="2025-01-01T00:00:00Z",
+            updated_at="2025-01-02T00:00:00Z",
+        )
+
+        llm_dict = bullet.to_llm_dict()
+
+        # Should include LLM-relevant fields
+        self.assertEqual(llm_dict["id"], "test-001")
+        self.assertEqual(llm_dict["section"], "test_section")
+        self.assertEqual(llm_dict["content"], "Test strategy content")
+        self.assertEqual(llm_dict["helpful"], 5)
+        self.assertEqual(llm_dict["harmful"], 1)
+        self.assertEqual(llm_dict["neutral"], 2)
+
+        # Should exclude timestamps
+        self.assertNotIn("created_at", llm_dict)
+        self.assertNotIn("updated_at", llm_dict)
+
+        # Should have exactly 6 fields
+        self.assertEqual(len(llm_dict), 6)
+
     def test_remove_bullet(self):
         """Test removing bullets."""
         self.playbook.remove_bullet(self.bullet1.id)
